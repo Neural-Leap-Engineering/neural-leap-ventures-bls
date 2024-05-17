@@ -8,4 +8,4 @@
 
 # Set a global timeout for all functions
 [functions.default]
-  timeout_in_seconds = 26
+  timeout_in_seconds = 100
