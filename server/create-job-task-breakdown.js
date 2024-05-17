@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { v4: uuidv4 } = require('uuid');
 const { Pool } = require('pg');
 
 // Your OpenAI API key
@@ -79,16 +80,19 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const insertQuery = 'INSERT INTO test (job_title, job_details) VALUES ($1, $2)';
+    const insertQuery = 'INSERT INTO test (job_id, job_title, job_details) VALUES ($1, $2, $3)';
     const jsonData = JSON.stringify(data);
 
     console.log('Inserting data into database');
     const dbStartTime = Date.now();
 
-    // Check if job_title is defined before calling toLowerCase()
-    const jobTitleLowerCase = job_title ? job_title.toLowerCase() : '';
+    // Check if job_title is defined before generating job_id
+    let jobId;
+    if (job_title) {
+      jobId = uuidv4();
+    }
 
-    await pool.query(insertQuery, [jobTitleLowerCase, jsonData]);
+    await pool.query(insertQuery, [jobId, job_title, jsonData]);
 
     return {
       statusCode: 200,
