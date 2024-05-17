@@ -4,14 +4,6 @@ const { Pool } = require('pg');
 // Your OpenAI API key
 const apiKey = process.env.API_KEY; // Store your API key in environment variables for security
 
-// Create an Axios client
-const client = axios.create({
-  baseURL: 'https://api.openai.com/v1',
-  headers: {
-    'Authorization': `Bearer ${apiKey}`,
-    'Content-Type': 'application/json'
-  }
-});
 
 // Database connection pool
 const pool = new Pool({
@@ -28,9 +20,14 @@ const pool = new Pool({
 // Function to call OpenAI API
 async function llmService(prompt) {
   try {
-    const response = await client.post('/chat/completions', {
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }]
+    }, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
     });
     return response.data.choices[0].message.content;
   } catch (error) {
