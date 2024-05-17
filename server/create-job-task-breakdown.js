@@ -1,9 +1,13 @@
+require('dotenv').config();
 const axios = require('axios');
 const { Pool } = require('pg');
 
-// Your OpenAI API key
-const apiKey = process.env.API_KEY; // Store your API key in environment variables for security
-
+// Ensure API key is available
+const apiKey = process.env.API_KEY;
+if (!apiKey) {
+  console.error('Error: API_KEY is not set');
+  process.exit(1);
+}
 
 // Database connection pool
 const pool = new Pool({
