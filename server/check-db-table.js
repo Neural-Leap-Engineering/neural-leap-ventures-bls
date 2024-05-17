@@ -1,4 +1,3 @@
-require('dotenv').config();
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -9,24 +8,22 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
-// exports.handler = async (event, context) => {
-//     return {
-//         statusCode: 200,
-//         body: "Hello, world!"
-//     };
-// };
-
-
-
 exports.handler = async (event, context) => {
     try {
+        console.log('Connecting to the database...');
+        const client = await pool.connect();
+        console.log('Connected to the database.');
+
         // SQL query to retrieve data
         const selectQuery = 'SELECT job_id, job_title FROM test';
         
         // Executing the SQL command
-        const result = await pool.query(selectQuery);
+        const result = await client.query(selectQuery);
         
-        // Fetch all rows from the database
+        // Release the client back to the pool
+        client.release();
+
+        // Fetch all rows from the result
         const records = result.rows;
 
         // Sending the records as response
@@ -35,7 +32,7 @@ exports.handler = async (event, context) => {
             body: JSON.stringify(records),
         };
     } catch (error) {
-        console.error(error);
+        console.error('Error connecting to the database:', error);
         return {
             statusCode: 500,
             body: JSON.stringify({ error: 'Error retrieving data' }),
