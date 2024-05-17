@@ -1,8 +1,11 @@
 [build]
   publish = "client"
   functions = "functions"
-  
+
 [functions]
   node_bundler = "esbuild"
   included_files = ["node_modules/**"]
-  timeout = 26
+
+# Set a global timeout for all functions
+[functions.default]
+  timeout_in_seconds = 26
