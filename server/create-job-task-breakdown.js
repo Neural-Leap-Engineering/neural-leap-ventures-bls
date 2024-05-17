@@ -1,13 +1,8 @@
-require('dotenv').config();
 const axios = require('axios');
 const { Pool } = require('pg');
 
-// Ensure API key is available
-const apiKey = process.env.API_KEY;
-if (!apiKey) {
-  console.error('Error: API_KEY is not set');
-  process.exit(1);
-}
+// Your OpenAI API key
+const apiKey = process.env.API_KEY; // Store your API key in environment variables for security
 
 // Database connection pool
 const pool = new Pool({
@@ -24,8 +19,6 @@ const pool = new Pool({
 // Function to call OpenAI API
 async function llmService(prompt) {
   try {
-    console.log('Calling OpenAI API...');
-    const startTime = Date.now();
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }]
@@ -35,8 +28,6 @@ async function llmService(prompt) {
         'Content-Type': 'application/json'
       }
     });
-    const endTime = Date.now();
-    console.log(`OpenAI API responded in ${endTime - startTime} ms`);
     return response.data.choices[0].message.content;
   } catch (error) {
     console.error('Error calling OpenAI API:', error);
@@ -76,12 +67,7 @@ exports.handler = async (event, context) => {
   ]`;
 
   try {
-    console.log('Starting function execution');
-    const startTime = Date.now();
-
     const result = await llmService(basePrompt);
-    console.log('Received response from OpenAI API');
-
     let data;
     try {
       data = JSON.parse(result.replace(/'/g, '"'));
@@ -98,12 +84,11 @@ exports.handler = async (event, context) => {
 
     console.log('Inserting data into database');
     const dbStartTime = Date.now();
-    await pool.query(insertQuery, [job_title.toLowerCase(), jsonData]);
-    const dbEndTime = Date.now();
-    console.log(`Database operation took ${dbEndTime - dbStartTime} ms`);
 
-    const endTime = Date.now();
-    console.log(`Function executed in ${endTime - startTime} ms`);
+    // Check if job_title is defined before calling toLowerCase()
+    const jobTitleLowerCase = job_title ? job_title.toLowerCase() : '';
+
+    await pool.query(insertQuery, [jobTitleLowerCase, jsonData]);
 
     return {
       statusCode: 200,
